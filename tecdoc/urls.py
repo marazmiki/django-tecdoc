@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from django.conf import settings
 
 from tecdoc.views.cartype import CarTypeView, CarModelView 
