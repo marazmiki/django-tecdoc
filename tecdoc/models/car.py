@@ -1,88 +1,56 @@
-# -*- coding: utf-8 -
+# coding: utf-8
 
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
 from django.core.cache import cache
 from django.db import models
-
+from django.utils.encoding import python_2_unicode_compatible
 from tecdoc.conf import TecdocConf as tdsettings
-from tecdoc.models.base import (TecdocModel, TecdocManager,
-                                TecdocManagerWithDes)
+from tecdoc.models.base import (TecdocModel, )
+from tecdoc.managers import CarModelManager, EngineManager, CarTypeManager
 
 
-class CarModelManager(TecdocManagerWithDes):
-
-    def get_query_set(self, *args, **kwargs):
-        return (super(CarModelManager, self).get_query_set(*args, **kwargs)
-                                            .select_related('manufacturer',
-                                                            'designation__description')
-                                            .distinct()
-               )
-
-    def get_models(self, manufacturer, date_min=None, date_max=None,
-                   search_text=None):
-
-        query = self.filter(manufacturer=manufacturer)
-
-        if date_min:
-             # TODO
-             pass
-
-        if date_max:
-             pass
-
-        if search_text:
-             query.filter(designation__description__text__icontains=search_text)
-
-        return query
-
-
+@python_2_unicode_compatible
 class CarModel(TecdocModel):
-    YESNO = (('0', u'Нет'),
-             ('1', u'Да'),
-            )
+    YESNO = (
+        ('0', u'Нет'),
+        ('1', u'Да'),
+    )
 
-    id = models.AutoField(u'Ид', primary_key=True,
-                          db_column='MOD_ID')
+    id = models.AutoField(u'Ид', primary_key=True, db_column='MOD_ID')
     production_start = models.IntegerField(u'Начало производства',
                                         db_column='MOD_PCON_START')
     production_end = models.IntegerField(u'Конец производства',
                                       db_column='MOD_PCON_END')
-
     manufacturer = models.ForeignKey('tecdoc.Manufacturer',
                                      verbose_name=u'Производитель',
                                      db_column='MOD_MFA_ID')
-
     designation = models.ForeignKey('tecdoc.CountryDesignation',
                                     verbose_name=u'Обозначение',
                                     db_column='MOD_CDS_ID')
-
     for_car = models.SmallIntegerField(u'Для легковых',
                                        db_column='MOD_PC',
                                        choices=YESNO,
                                        blank=True, null=True)
-
     for_truck = models.SmallIntegerField(u'Для грузовых',
                                          db_column='MOD_CV',
                                          choices=YESNO,
                                          blank=True, null=True)
-
     objects = CarModelManager()
 
-    def __unicode__(self):
-        return u'%s %s (%s-%s)' % (self.manufacturer,
-                                   self.designation,
-                                   self.production_start, self.production_end or u'н.д.')
+    def __str__(self):
+        return '%s %s (%s-%s)' % (self.manufacturer,
+                                  self.designation,
+                                  self.production_start,
+                                  self.production_end or u'н.д.')
 
     class Meta(TecdocModel.Meta):
         db_table = tdsettings.DB_PREFIX + 'MODELS'
 
 
-class EngineManager(TecdocManager):
-    def get_query_set(self, *args, **kwargs):
-        return (super(EngineManager, self).get_query_set(*args, **kwargs)
-                                          .filter(fuel_des__lang=tdsettings.LANG_ID)
-                                          .select_related('manufacturer',
-                                                          'fuel_des__description')
-               )
+
 
 
 class Engine(TecdocModel):
@@ -123,25 +91,6 @@ class Engine(TecdocModel):
 
     class Meta(TecdocModel.Meta):
         db_table = tdsettings.DB_PREFIX + 'ENGINES'
-
-
-class CarTypeManager(TecdocManagerWithDes):
-
-    def get_query_set(self, *args, **kwargs):
-        return (super(CarTypeManager, self).get_query_set(*args, **kwargs)
-                                           .filter(model__designation__lang=tdsettings.LANG_ID,
-                                                   full_designation__lang=tdsettings.LANG_ID,
-                                                   drive_des__lang=tdsettings.LANG_ID,
-                                                   body_des__lang=tdsettings.LANG_ID,
-                                                   designation__description__text__isnull=False)
-                                           .select_related('model__manufacturer',
-                                                           'model__designation__description',
-                                                           'full_designation__description',
-                                                           'designation__description',
-                                                           'drive_des__description',
-                                                           'body_des__description')
-                                           .prefetch_related('engines')
-               )
 
 
 class CarType(TecdocModel):

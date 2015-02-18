@@ -1,10 +1,13 @@
-# -*- coding: utf-8 -
+# coding: utf-8
 
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
 from django.db import models
-
 from tecdoc.conf import TecdocConf as tdsettings
-from tecdoc.models.base import (TecdocModel, TecdocManager,
-                                TecdocManagerWithDes)
+from tecdoc.models.base import (TecdocModel, )
+from tecdoc.managers import TecdocManager, TecdocManagerWithDes
 
 
 class Country(TecdocModel):

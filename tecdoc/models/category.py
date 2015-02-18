@@ -3,8 +3,8 @@
 from django.db import models
 
 from tecdoc.conf import TecdocConf as tdsettings
-from tecdoc.models.base import (TecdocModel, TecdocManager,
-                                TecdocManagerWithDes, Designation)
+from tecdoc.managers import TecdocManagerWithDes
+from tecdoc.models.base import (TecdocModel, Designation)
 
 from tecdoc.models.part import Part, Group
 

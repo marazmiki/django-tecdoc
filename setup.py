@@ -1,13 +1,14 @@
-# -*- coding: utf-8 -
-#
-# This file is part of django-tecdoc released under the MIT license. 
-# See the NOTICE for more information.
+#!/usr/bin/env python
+# coding: utf-8
 
-import os
-import sys
 from setuptools import setup, find_packages
-
 from tecdoc import VERSION
+import os
+
+
+def _read(rel_path):
+    with open(os.path.join(os.path.dirname(__file__), rel_path)) as fp:
+        return fp.read()
 
 
 setup(
@@ -15,16 +16,11 @@ setup(
     version=VERSION,
 
     description='Itegration django and tecdoc db',
-    long_description=file(
-        os.path.join(
-            os.path.dirname(__file__),
-            'README.md'
-        )
-    ).read(),
+    long_description=_read('README.md'),
     author='Victor Safronovich',
     author_email='vsafronovich@gmail.com',
     license='MIT',
-    url='http://github.com/suvit/django-tecdoc',
+    url='https://github.com/marazmiki/django-tecdoc',
     zip_safe=False,
     packages=find_packages(exclude=['docs', 'examples', 'tests']),
     install_requires=file(

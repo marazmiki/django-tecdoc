@@ -1,19 +1,17 @@
-# -*- coding: utf-8 -
+# coding: utf-8
 
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
 from django.db import models
-from django.db.models.base import ModelBase
-
+from django.utils.encoding import python_2_unicode_compatible
+from django.utils.translation import ugettext_lazy as _
 from tecdoc.conf import TecdocConf as tdsettings
+from tecdoc.managers import TecdocManager, DesignationManager
 
-
-class TecdocManager(models.Manager):
-    def get_query_set(self, *args, **kwargs):
-        return (super(TecdocManager, self).get_query_set(*args, **kwargs)
-                                          .using(tdsettings.DATABASE)
-                                               )
 
 class TecdocModel(models.Model):
-
     objects = TecdocManager()
 
     class Meta:
@@ -22,30 +20,28 @@ class TecdocModel(models.Model):
         app_label = 'tecdoc'
 
 
+@python_2_unicode_compatible
 class Description(TecdocModel):
-    id = models.AutoField(u'Ид', primary_key=True,
-                          db_column='TEX_ID')
-    text = models.TextField(u'Текст', db_column='TEX_TEXT')
+    id = models.AutoField(_('ID'), primary_key=True, db_column='TEX_ID')
+    text = models.TextField(_('Текст'), db_column='TEX_TEXT')
 
     class Meta(TecdocModel.Meta):
         db_table = tdsettings.DB_PREFIX + 'DES_TEXTS'
-        verbose_name = u'Текст обозначения'
+        verbose_name = _('text')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.text
 
 
+@python_2_unicode_compatible
 class Text(TecdocModel):
-    id = models.AutoField(u'Ид', primary_key=True,
-                          db_column='TMT_ID')
-
-    text = models.TextField(u'Текст', db_column='TMT_TEXT',
-                            null=True)
+    id = models.AutoField(_('ID'), primary_key=True, db_column='TMT_ID')
+    text = models.TextField(_('Текст'), db_column='TMT_TEXT', null=True)
 
     class Meta(TecdocModel.Meta):
         db_table = tdsettings.DB_PREFIX + 'TEXT_MODULE_TEXTS'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.text
 
 
@@ -57,7 +53,7 @@ class Language(TecdocModel):
     designation = models.ForeignKey('tecdoc.Designation',
                                     verbose_name=u'Обозначение',
                                     db_column='LNG_DES_ID',
-                                    blank=True, null=True) 
+                                    blank=True, null=True)
 
     iso_code = models.CharField(u'Код ISO2', max_length=6,
                                 db_column='LNG_ISO2',
@@ -71,14 +67,6 @@ class Language(TecdocModel):
         db_table = tdsettings.DB_PREFIX + 'LANGUAGES'
 
 
-class DesignationManager(TecdocManager):
-    def get_query_set(self, *args, **kwargs):
-        return (super(DesignationManager, self).get_query_set(*args, **kwargs)
-                                               .filter(lang=tdsettings.LANG_ID)
-                                               .select_related('description')
-                                               )
-
-
 class DesignationBase(TecdocModel):
 
     objects = DesignationManager()
@@ -87,7 +75,7 @@ class DesignationBase(TecdocModel):
         abstract = True
 
     def __unicode__(self):
-        return self.description.text or u'-'
+        return self.description.text or '-'
 
 
 class TextModule(DesignationBase):
@@ -108,11 +96,6 @@ class TextModule(DesignationBase):
         db_table = tdsettings.DB_PREFIX + 'TEXT_MODULES'
 
 
-class TecdocManagerWithDes(TecdocManager):
-    def get_query_set(self, *args, **kwargs):
-        query = super(TecdocManagerWithDes, self).get_query_set(*args, **kwargs)
-        query = query.filter(designation__lang=tdsettings.LANG_ID)
-        return query.select_related('designation__description')
 
 
 class Designation(DesignationBase):

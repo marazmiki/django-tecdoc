@@ -1,17 +1,24 @@
 {% extends 'tecdoc/base.html'%}
-
-{% load url from future %}
+{% load i18n %}
 
 {% block content %}
-<h1>Производитель {{object}}</h1>
-<p>Всего моделей: {{object.carmodel_set.count}}</p>
+  <h1>Производитель {{ object }}</h1>
+  <p>Всего моделей: {{ object.carmodel_set.count }}</p>
 
-{% load pagination_tags %}
-{% autopaginate object.carmodel_set.all %}
-<ul>
-{% for model in page_obj %}
-  <li><a href="{% url 'tecdoc-models' model.id %}">{{model}}</a></li>
-{% endfor %}
-</ul>
-{% paginate %}
-{% endblock %}
+  <table class="table">
+    <thead>
+      <th>Модель</th>
+      <th>Начало производства</th>
+      <th>Конец производства</th>
+    </thead>
+    <tbody>
+    {% for model in  object.carmodel_set.all %}
+      <tr>
+        <td><a href="{% url 'tecdoc-models' model.id %}">{{ model.designation }}</a></td>
+        <td>{{ model.production_start }}</td>
+        <td>{{ model.production_end|default:'present days' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% endblock content %}

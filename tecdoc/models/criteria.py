@@ -1,17 +1,9 @@
 # -*- coding: utf-8 -
+
 from django.db import models
-
 from tecdoc.conf import TecdocConf as tdsettings
-from tecdoc.models.base import (TecdocModel, TecdocManager,
-                                TecdocManagerWithDes)
-
-
-class CriteriaManager(TecdocManagerWithDes):
-    def get_query_set(self, *args, **kwargs):
-        query = super(CriteriaManager, self).get_query_set(*args, **kwargs)
-        query = query.filter(short_designation__lang=tdsettings.LANG_ID)
-        return query.select_related('designation__description',
-                                    'short_designation__description')
+from tecdoc.managers import CriteriaManager, PartCriteriaManager
+from tecdoc.models.base import TecdocModel
 
 
 class Criteria(TecdocModel):
@@ -47,7 +39,7 @@ class Criteria(TecdocModel):
                             db_column='CRI_TYPE')
 
     is_interval = models.BooleanField(u'Интервальный',
-                                      db_column='CRI_IS_INTERVAL')
+                                      db_column='CRI_IS_INTERVAL', default=False)
 
     child = models.ForeignKey('self', verbose_name=u'Второй критерий',
                               db_column='CRI_SUCCESSOR',
@@ -70,15 +62,6 @@ class Criteria(TecdocModel):
     def get_display_value(self):
         return self.short_designation or self.designation
 
-
-class PartCriteriaManager(TecdocManagerWithDes):
-    def get_query_set(self, *args, **kwargs):
-        query = super(PartCriteriaManager, self).get_query_set(*args, **kwargs)
-        query = query.filter(criteria__short_designation__lang=tdsettings.LANG_ID,
-                             criteria__designation__lang=tdsettings.LANG_ID)
-        return query.select_related('designation__description',
-                                    'criteria__short_designation__description',
-                                    'criteria__designation__description')
 
 
 class PartCriteria(TecdocModel):
@@ -104,7 +87,7 @@ class PartCriteria(TecdocModel):
     sorting = models.IntegerField(u'Порядок', db_column='ACR_SORT')
 
     display = models.BooleanField(u'Показывать',
-                                  db_column='ACR_DISPLAY')
+                                  db_column='ACR_DISPLAY', default=False)
 
     # XXX join remove rows with ACR_KV_DES_ID==0
     objects = PartCriteriaManager()

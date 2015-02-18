@@ -1,45 +1,51 @@
-from django.conf.urls import *
-from django.conf import settings
+# coding: utf-8
 
-from tecdoc.views.cartype import CarTypeView, CarModelView 
-from tecdoc.views.groups import GroupView
-from tecdoc.views.manufacturer import ManufacturerList, ManufacturerView
-from tecdoc.views.parts import PartView
-from tecdoc.views.suppliers import SupplierList, SupplierView
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
+from django.conf.urls import url, include
+from tecdoc import views
 
-urlpatterns = patterns("tecdoc.views",
-    url(r'^manufacturers/$', ManufacturerList.as_view(),
+
+manufacturer_urlpatterns = [
+    url(r'^$', views.ManufacturerListView.as_view(),
         name='tecdoc-manufacturers'),
-    url(r'^manufacturer/(?P<mnf_id>\d+)/$', ManufacturerView.as_view(),
+    url(r'^(?P<pk>\d+)/$', views.ManufacturerDetailView.as_view(),
         name='tecdoc-manufacturer'),
-    url(r'^models/(?P<model_id>\d+)/$', CarModelView.as_view(),
+]
+
+
+supplier_urlpatterns = [
+    url(r'^suppliers/$', views.SupplierListView.as_view(),
+        name='suppliers'),
+    url(r'^suppliers/(?P<pk>\d+)/$', views.SupplierDetailView.as_view(),
+        name='supplier'),
+]
+
+
+cartype_urlpatterns = [
+    url(r'^(?P<pk>\d+)/$', views.CarTypeDetailView.as_view(),
+        name='car_type'),
+    url(r'^(?P<pk>\d+)/category/$', views.category_tree_by_type,
+        name='caregory_tree_by_type'),
+    url(r'^(?P<pk>\d+)/category/(?P<parent>\d+)$', views.category_tree_by_type,
+        name='caregory_tree_by_type'),
+]
+
+urlpatterns = [
+    url(r'^manufacturers/', include(manufacturer_urlpatterns)),
+    url(r'^suppliers/', include(supplier_urlpatterns)),
+    url(r'^cartypes/', include(cartype_urlpatterns)),
+
+    url(r'^models/(?P<pk>\d+)/$', views.CarModelDetailView.as_view(),
         name='tecdoc-models'),
 
-    url(r'^suppliers/$', SupplierList.as_view(),
-        name='suppliers'),
-    url(r'^suppliers/(?P<supplier_id>\d+)/$', SupplierView.as_view(),
-        name='supplier'),
-
-    url(r'^car_types/(?P<car_type_id>\d+)/$', CarTypeView.as_view(),
-        name='car_type'),
-
-    url(r'^categories/$', 'category.category_tree',
+    url(r'^categories/$', views.category_tree,
         name='category_tree'),
-    url(r'^categories/(?P<parent>\d+)/$$', 'category.category_tree',
+    url(r'^categories/(?P<pk>\d+)/$$', views.category_tree,
         name='category_tree'),
 
-    url(r'^cartypes/(?P<type_id>\d+)/category/$',
-        'category.category_tree_by_type',
-        name='caregory_tree_by_type'),
-    url(r'^cartypes/(?P<type_id>\d+)/category/(?P<parent>\d+)$',
-        'category.category_tree_by_type',
-        name='caregory_tree_by_type'),
-
-    url(r'^groups/(?P<group_id>\d+)/$',
-        GroupView.as_view(),
-        name='group'),
-
-    url(r'^parts/(?P<part_id>\d+)/$',
-        PartView.as_view(),
-        name='part'),
-)
+    url(r'^groups/(?P<pk>\d+)/$', views.GroupDetailView.as_view(), name='group'),
+    url(r'^parts/(?P<pk>\d+)/$', views.PartDetailView.as_view(), name='part'),
+]

@@ -2,8 +2,8 @@
 from django.db import models
 
 from tecdoc.conf import TecdocConf as tdsettings
-from tecdoc.models.base import (TecdocModel, TecdocManager,
-                                TecdocManagerWithDes)
+from tecdoc.managers import ImageManager, PdfManager
+from tecdoc.models.base import TecdocModel
 
 PDF_TYPE = 2
 
@@ -39,12 +39,6 @@ class File(TecdocModel):
     url = absolute_url
 
 
-class ImageManager(TecdocManager):
-    def get_query_set(self, *args, **kwargs):
-        return (super(ImageManager, self).get_query_set(*args, **kwargs)
-                                         .filter(lang__in=(tdsettings.LANG_ID, 255))
-                                         .exclude(type=PDF_TYPE)
-                                               )
 
 
 class Image(File):
@@ -73,12 +67,7 @@ class PartImage(TecdocModel):
         db_table = tdsettings.DB_PREFIX + 'LINK_GRA_ART'
 
 
-class PdfManager(TecdocManager):
-    def get_query_set(self, *args, **kwargs):
-        return (super(PdfManager, self).get_query_set(*args, **kwargs)
-                                       .filter(lang__in=(tdsettings.LANG_ID, 255),
-                                               type=PDF_TYPE)
-               )
+
 
 
 class PdfFile(File):

@@ -7,8 +7,8 @@ from django.db import models
 from django.db.models import Q
 
 from tecdoc.conf import TecdocConf as tdsettings
-from tecdoc.models.base import (TecdocModel, TecdocManager,
-                                TecdocManagerWithDes, Designation)
+from tecdoc.managers import PartManager, GroupManager
+from tecdoc.models.base import (TecdocModel)
 from tecdoc.models.car import CarType
 
 CACHE_PREFIX = settings.CACHE_MIDDLEWARE_KEY_PREFIX
@@ -20,25 +20,6 @@ def clean_number(number):
     return number_re.sub('', number)
 
 
-class PartManager(TecdocManagerWithDes):
-    def get_query_set(self, *args, **kwargs):
-        query = super(PartManager, self).get_query_set(*args, **kwargs)
-        query = query.select_related('designation__description',
-                                     'supplier')
-
-        query = query.prefetch_related('analogs', 'images')
-        return query
-
-    def lookup(self, number, manufacturer=None):
-        query = Q(search_number=clean_number(number))
-        if manufacturer:
-            if isinstance(manufacturer, int):
-                query &= Q(part__supplier=manufacturer) | Q(brand=manufacturer)
-            elif hasattr(manufacturer, '__iter__'):
-                query &= Q(part__supplier__title__in=manufacturer) | Q(brand__title__in=manufacturer)
-            else:
-                query &= Q(part__supplier__title=manufacturer) | Q(brand__title=manufacturer)
-        return PartAnalog.objects.filter(query)
 
 
 class Part(TecdocModel):
@@ -135,17 +116,6 @@ class Part(TecdocModel):
         """
         return self.get_images()[1:]
 
-
-class GroupManager(TecdocManagerWithDes):
-    def get_query_set(self, *args, **kwargs):
-        query = super(GroupManager, self).get_query_set(*args, **kwargs)
-        query = query.filter(standard__lang=tdsettings.LANG_ID,
-                             assembly__lang=tdsettings.LANG_ID,
-                             intended__lang=tdsettings.LANG_ID)
-        return query.select_related('designation__description',
-                                    'standard__description',
-                                    'assembly__description',
-                                    'intended__description')
 
 
 class Group(TecdocModel):
